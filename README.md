@@ -1,6 +1,6 @@
 # About this repo
 
-![BLACK_RPI device preview](https://github.com/baranchuk/blakrpi/blob/readme/_readme_source/blakrpi.preview.jpeg?raw=true)
+![BLACK_RPI device preview](https://github.com/baranchuk/blakrpi/blob/readme/_readme_source/blakrpi.preview.2.jpeg?raw=true)
 
 This project is a implementation of [BLACK_RPI](http://www.blakrpi.com/) open source project.
 
