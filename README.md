@@ -54,7 +54,7 @@ Write it to SD card (I did use [balenaEtcher](https://www.balena.io/etcher/))
 
 Copy these two files to same SD card. 
 
-## First time commands
+## Config device installation process
 
 Plug in SD card to RPI0W at BlakRPI and power it up.
 
