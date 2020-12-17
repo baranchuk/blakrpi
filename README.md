@@ -4,67 +4,142 @@
 
 This project is a implementation of [BLACK_RPI](http://www.blakrpi.com/) open source project.
 
+At this moment repo contains 
+- Device building documentation 
+- Software installation guide 
+- Some additional software pack
 
-## Sd card preparation
+# Device building documentation
+
+Its placed in `Docs` folder this repo. 
+
+**Diagram.pdf** 
+
+Principle device diagram from device founder ...
+
+**E32-868T20D_Usermanual_EN_v1.7.pdf**
+
+...
+
+**GSM_manual.pdf**
+
+...
+
+**LCSC.xlsx**
+
+...
+
+# Software instalation guide
+
+This block will help you alive your device. It's follow these basic sections: 
+
+- Prepare installation SD card
+- Config device installation process
+- Kernel compilation
+- Keyboard setup
+- TFT screen setup
+- Oled screen setup
+- Audio setup
+
+## Prepare installation SD card
+
+>>> Я бы поработал с этим блоком, складывается ощущение, что по ссылке надо найти сам образ а не софтину, которая этот образ сформирует.
 
 Get latest [Raspian image](https://www.raspberrypi.org/software/).
-Write it to sd card (I use [balenaEtcher](https://www.balena.io/etcher/))
+Write it to SD card (I did use [balenaEtcher](https://www.balena.io/etcher/))
 
-Prepare your [wpa_supplicant.conf](https://www.raspberrypi.org/documentation/configuration/wireless/wireless-cli.md) and clear .ssh file and copy it to your sd card. Now time to insert your sd card to your RPI0W at BlakRPI and power it up first time!
+- Create network config file ([wpa_supplicant.conf](https://www.raspberrypi.org/documentation/configuration/wireless/wireless-cli.md)) 
+- Create empty .ssh file 
+>>> Наверное стоит написать хотябы тезисно что это за шаманство с пустым ссш файлом. Все не понятное вызывает недоумение.
+
+Copy these two files to same SD card. 
 
 ## First time commands
 
-Find IP of your BlakRPI at your network. You can do it via your router interface or use IP scanner. I use [Angry IP scanner](https://angryip.org/download/). 
+Plug in SD card to RPI0W at BlakRPI and power it up.
 
+Find BlakRPI IP at your network. 
+> &#9432; You can do it via your router interface or use IP scanner. I did use [Angry IP scanner](https://angryip.org/download/). 
+
+>>> А разве там по умолчанию не включен терминал? 
 Open terminal, ssh onto your BlakRPI
 
-`ssh pi@[your_BlackRPI_IP]`
+```bash
+ssh pi@[your_BlackRPI_IP]
+```
 
-default credentials
-user:pi
-password:raspberry
+Default credentials
+- user: pi
+- password: raspberry
 
-Now you can change password using `passwd` command
+> Optionally you can change password using `passwd` command
 
 Run [configuration utility](https://www.raspberrypi.org/documentation/configuration/raspi-config.md)
 
-`sudo raspi-config`
+```bash
+sudo raspi-config
+```
 
-At menu select `Interfacing option` and enable I2C, SPI, serial, but disable serial console. 
-At Advanced option menu select `Resize sd card` option. 
-Exit utility and do command
+Navigate to `Interfacing option` menu option
+- enable:  "`I2C`",  "`SPI`",  "`serial`", 
+- disable: "`serial console`". 
 
-`sudo apt-get update && sudo apt-get upgrade -y && sudo apt-get dist-upgrade -y`
+At `Advanced option` menu item select `Resize sd card` option. 
 
-to get latest software. After it finished reboot your BlakRPI 
+Exit utility and execute command
 
-`sudo reboot`
+```bash
+sudo apt-get update && sudo apt-get upgrade -y && sudo apt-get dist-upgrade -y
+```
+
+This will update latest software. After finish reboot your BlakRPI
+
+```bash
+sudo reboot
+```
 
 ## Kernel compilation
 
-At this section we recompile linux kernel to get TCA8418 keyboard driver kernel support. It need to get keyboard work. I use [kernel building](https://www.raspberrypi.org/documentation/linux/kernel/building.md) and [configuration kernel](https://www.raspberrypi.org/documentation/linux/kernel/configuring.md) manuals. I spend many time trying cross-compilation, but get unstable system with broken dependencies. Compilation on RPI0W with fast (90MB reading/55MB writing speed) take 33-36hrs, please be patient. Make shure your ssh connection is stable (my notebook go sleep, broke ssh and i need to start over).
+This section describes **linux kernel** compilation with a TCA8418 keyboard driver support. *This is necessary for the keyboard to work.*
 
-Installing Git and build dependencies
+> &#9785; With [kernel building](https://www.raspberrypi.org/documentation/linux/kernel/building.md) and [configuration kernel](https://www.raspberrypi.org/documentation/linux/kernel/configuring.md) manuals i spent a lot of time trying cross-compilation, but got only unstable system with broken dependencies before I got successful result. Compilation on RPI0W with fast (90MB reading/55MB writing speed) took 33-36hrs each retry... so be patient. 
 
-`sudo apt install git bc bison flex libssl-dev make libncurses5-dev`
+> &#9888; Make sure your ssh connection is stable (my laptop went sleep, breaking ssh and i had to start over).
 
-get sources (it take some time)
 
-`git clone --depth=1 https://github.com/raspberrypi/linux`
+So after reboot your device
+### Install Git and dependencies
 
-apply default kernel configuration for RPI0
+>>> в идеале в кратце рассказать что зачем
+```bash
+sudo apt install git bc bison flex libssl-dev make libncurses5-dev
+```
 
-`cd linux`
+### Clone linus sources (it takes some time)
+```bash
+git clone --depth=1 https://github.com/raspberrypi/linux
+```
 
-`KERNEL=kernel`
+### Apply default kernel configuration for `RPI0` by execute next commands
+```bash
+cd linux
+KERNEL=kernel
+make bcmrpi_defconfig
+```
 
-`make bcmrpi_defconfig`
+### Make configuration changes
 
-make configuration changes
+Start configuration application
+>>> не нужно ли перейти внутрь перед запуском? cd /usr/src/linux?
+```bash
+make menuconfig
+```
 
-`make menuconfig`
+Navigate to `Device drivers --> Input device support --> Keyboards --> TCA8418 Keypad Support`. 
 
-Go to `Device drivers --> Input device support --> Keyboards --> TCA8418 Keypad Support`. Press space, `*` is appear. Exit and save your configuration. IMPORTANT!!! I try to get name of version at General setup --> Local version. NEVER USE SPACE HERE!!!
+Press space, `*` is appear. Exit and save your configuration.
+
+IMPORTANT!!! I tried to set name of version at `General setup --> Local version`. NEVER USE SPACE HERE!!!
 
 building (take 33-35hrs at fast sd card, be patient!)
 
